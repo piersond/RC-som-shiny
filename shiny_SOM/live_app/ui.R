@@ -198,7 +198,7 @@ ui <- fluidPage(
             selectInput(
               'map_base_lyr',
               'Base layer:',
-              choices = c("Topographic", "Relief", "White"),
+              choices = c("Topographic", "Relief", "White", "Topo-Relief", "World Imagery"),
               selected = "Topographic"
             ),
             selectInput(
@@ -226,7 +226,7 @@ ui <- fluidPage(
         mainPanel(
           tabsetPanel(
             tabPanel("Plot", value = 1, plotOutput("dataPlot")),
-            tabPanel("Map", value = 2, leafletOutput("som_map")),
+            tabPanel("Map", value = 2, leafletOutput("som_map", height=700)),
             tabPanel("Table", value = 3, DTOutput('tbl')),
             id = "conditionedPanels"
           )
