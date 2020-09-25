@@ -43,16 +43,20 @@ server <- function(input, output, session) {
       df <- df %>% filter(time_series == "NO")
     }
     
-    #Experiment filter
-    if (input$exptype != "ALL") {
-      df <- df %>% filter(experiments == 'YES') %>% 
-        filter(tx_L1_level == input$exptype | 
-               tx_L2_level == input$exptype | 
-               tx_L3_level == input$exptype | 
-               tx_L2_level == input$exptype | 
-               tx_L3_level == input$exptype | 
-               tx_L4_level == input$exptype)
-    }
+    # #Experiment filter
+    # if (input$exptype != "ALL") {
+    #   df <- df %>% filter(experiments == 'YES') %>% 
+    #     filter(tx_L1_level == input$exptype | 
+    #            tx_L2_level == input$exptype | 
+    #            tx_L3_level == input$exptype | 
+    #            tx_L2_level == input$exptype | 
+    #            tx_L3_level == input$exptype | 
+    #            tx_L4_level == input$exptype)
+    # }
+    
+    #Dataset filter
+    if (input$RC_dataset != "ALL") {
+      df <- df %>% filter(google_dir == input$RC_dataset)} 
     
     #Top depth filter
     if (input$top_d[1] != "-3" || input$top_d[2] != "300") {
@@ -176,7 +180,10 @@ server <- function(input, output, session) {
       mutate(lat = as.numeric(lat)) %>% 
       mutate(long = as.numeric(long)) 
     
-    df <- df[!duplicated(df[,c('lat','long')]),]
+    print(str(df))
+    
+    #DEBUG - DOES THIS CAUSE MISSING DATA FROM MAP
+    #df <- df[!duplicated(df[,c('lat','long')]),]
     
     return(df)
     
@@ -186,8 +193,14 @@ server <- function(input, output, session) {
   #Set column to use for map color
   map_colorby <- reactive({
     df <- map_pts()
-    return(unname(unlist(df[,input$map_color])))
-  })
+    #return(unname(unlist(df[,input$map_color])))
+  
+    #DEBUG
+    var_to_map <- unname(unlist(df[,input$map_color])) %>% na.omit()  
+    
+    return(var_to_map)
+    
+    })
   
   #Color palette for map
   map_pal <- reactive({
@@ -207,13 +220,17 @@ server <- function(input, output, session) {
     string <- NULL
     if(input$map_base_lyr == "Topographic"){string <- "Esri.WorldStreetMap"}
     if(input$map_base_lyr == "White"){string <- "Stamen.TonerLite"}
+    if(input$map_base_lyr == "Topo-Relief"){string <- "Stamen.TopOSMRelief"}
     if(input$map_base_lyr == "Relief"){string <- "Esri.WorldPhysical"}
+    if(input$map_base_lyr == "World Imagery"){string <- "Esri.WorldImagery"}
     return(string)
   })
   
   #Create map object
   output$som_map <- renderLeaflet({
-    leaflet(map_pts(), options = leafletOptions(minZoom = 1, maxZoom = 11)) %>%
+    leaflet(map_pts(), width=100, height=200, options = leafletOptions(minZoom = 0, maxZoom = 18,
+              sizingPolicy = leafletSizingPolicy(defaultWidth = "100%", defaultHeight = 600,
+                                                 padding = 0, browser.fill = TRUE))) %>%
       addProviderTiles(map_base(), options = providerTileOptions(noWrap = TRUE)) %>%
       # setMaxBounds(lng1 = -180, 
       #              lat1 = -90, 

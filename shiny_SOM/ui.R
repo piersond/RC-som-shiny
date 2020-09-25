@@ -17,6 +17,8 @@ exp.types <- union(exp.types,exp.types) #removes duplicates from the vector
 
 networks <- unique(tarball$network)
 
+RC_datasets <- unique(tarball$google_dir)
+
 #List of site names
 site.names <- sort(unique(tarball$location_name))
 
@@ -94,9 +96,9 @@ ui <- fluidPage(
                  ),
                  #HOW TO start with empty box instead of using "ALL"
                  selectInput(
-                   'exptype',
-                   'Experiment type:',
-                   choices = c("ALL", exp.types),
+                   'RC_dataset',
+                   'Dataset:',
+                   choices = c("ALL", RC_datasets),
                    selected = "ALL"
                  )
                )),
@@ -198,7 +200,7 @@ ui <- fluidPage(
             selectInput(
               'map_base_lyr',
               'Base layer:',
-              choices = c("Topographic", "Relief", "White"),
+              choices = c("Topographic", "Relief", "White", "Topo-Relief", "World Imagery"),
               selected = "Topographic"
             ),
             selectInput(
@@ -226,7 +228,7 @@ ui <- fluidPage(
         mainPanel(
           tabsetPanel(
             tabPanel("Plot", value = 1, plotOutput("dataPlot")),
-            tabPanel("Map", value = 2, leafletOutput("som_map")),
+            tabPanel("Map", value = 2, leafletOutput("som_map", height=700)),
             tabPanel("Table", value = 3, DTOutput('tbl')),
             id = "conditionedPanels"
           )

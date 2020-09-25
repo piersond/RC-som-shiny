@@ -16,6 +16,10 @@ library(shinyjs)
 # load tarball rds
 tarball <- readRDS("RC_database_current.rds")
 
+tarball <- map_dfc(.x = tarball, .f = ~type.convert(.x, as.is=T))
+
+#str(tarball)
+
 # load control only function
 # source('ext_ftns/control_filter.R', chdir=T)
 
