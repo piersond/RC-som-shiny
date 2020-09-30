@@ -231,6 +231,16 @@ server <- function(input, output, session) {
     leaflet(map_pts(), width=100, height=200, options = leafletOptions(minZoom = 0, maxZoom = 18,
               sizingPolicy = leafletSizingPolicy(defaultWidth = "100%", defaultHeight = 600,
                                                  padding = 0, browser.fill = TRUE))) %>%
+      #add shapefile to map
+      addPolygons(data=rc_watersheds,
+                  col = 'black',
+                  stroke = TRUE, 
+                  weight=2,
+                  opacity=1,
+                  fillColor="grey90",
+                  fillOpacity = 0.05, 
+                  smoothFactor = 2) %>%
+      
       addProviderTiles(map_base(), options = providerTileOptions(noWrap = TRUE)) %>%
       # setMaxBounds(lng1 = -180, 
       #              lat1 = -90, 
