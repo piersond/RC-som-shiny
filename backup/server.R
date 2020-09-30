@@ -14,10 +14,6 @@
 som.numerics <- select_if(tarball, is.numeric) %>% colnames() %>% sort()
 som.strings <- select_if(tarball, is.character) %>% colnames() %>% sort()
 
-library(rgdal)
-rc_watersheds <- readOGR("watersheds_2014.shp", layer="watersheds_2014")
-rc_watersheds <- spTransform(rc_watersheds, CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
 ### SERVER ###
 server <- function(input, output, session) {
   #reactive function to create data table
@@ -184,8 +180,6 @@ server <- function(input, output, session) {
       mutate(lat = as.numeric(lat)) %>% 
       mutate(long = as.numeric(long)) 
     
-    print(str(df))
-    
     #DEBUG - DOES THIS CAUSE MISSING DATA FROM MAP
     #df <- df[!duplicated(df[,c('lat','long')]),]
     
@@ -235,16 +229,6 @@ server <- function(input, output, session) {
     leaflet(map_pts(), width=100, height=200, options = leafletOptions(minZoom = 0, maxZoom = 18,
               sizingPolicy = leafletSizingPolicy(defaultWidth = "100%", defaultHeight = 600,
                                                  padding = 0, browser.fill = TRUE))) %>%
-      #add shapefile to map
-      addPolygons(data=rc_watersheds,
-                  col = 'black',
-                  stroke = TRUE, 
-                  weight=2,
-                  opacity=1,
-                  fillColor="grey90",
-                  fillOpacity = 0.05, 
-                  smoothFactor = 2) %>%
-      
       addProviderTiles(map_base(), options = providerTileOptions(noWrap = TRUE)) %>%
       # setMaxBounds(lng1 = -180, 
       #              lat1 = -90, 
