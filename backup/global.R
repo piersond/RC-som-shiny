@@ -11,9 +11,7 @@ library(jsonlite) # to write issues into json
 library(readr) # to read the token into R
 
 library(shinyjs)
-library(rgdal)
 
-#setwd("C:/GitHub/RC-som-shiny/shiny_SOM")
 
 # load tarball rds
 tarball <- readRDS("RC_database_current.rds")
@@ -28,16 +26,9 @@ tarball <- map_dfc(.x = tarball, .f = ~type.convert(.x, as.is=T))
 # load SOM var info csv
 var.info <- read.csv("SOM_data_key.csv", as.is=T)
 
+
 # link to github api issues
 #issues_url <- "https://api.github.com/repos/lter/lterwg-som-shiny/issues"
 
 # get the private issue token from local file
 #issue_token <- readr::read_file('machine_git_token.txt')
-
-#Reynolds creek shapefile
-#file.exists('./map/watersheds_2014.shp')
-#rc_watersheds <- readOGR("watersheds_2014.shp", layer="watersheds_2014")
-#rc_watersheds <- spTransform(rc_watersheds, CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
-
-
