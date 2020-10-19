@@ -18,6 +18,25 @@ drop_cols <- c('google_id', 'addit_contact_email', 'addit_contact_person', 'auth
                'experiments', 'gradient', 'header_row', 'key_version', 'location_name', 'merge_align', 'modification_date',
                'NA_1', 'NA_2', 'network', 'site_code', 'time_series', 'sample_collector') 
 
+avg.formula = 
+  "function (cluster) {
+var markers = cluster.getAllChildMarkers();
+var sum = 0;
+var count = 0;
+var avg = 0;
+var mFormat = ' marker-cluster-';
+for (var i = 0; i < markers.length; i++) {
+if(markers[i].options.weight != undefined){
+sum += markers[i].options.weight;
+count += 1;
+}
+}
+avg = Math.round(sum/count);
+if(avg<333) {mFormat+='small'} else if (avg>667){mFormat+='large'}else{mFormat+='medium'};
+return L.divIcon({ html: '<div><span>' + avg + '</span></div>', className: 'marker-cluster'+mFormat, iconSize: L.point(40, 40) });
+}"
+
+
 function(input, output, session) {
 
   ## Interactive Map ###########################################
@@ -29,7 +48,53 @@ function(input, output, session) {
       #   urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
       #   attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
       # ) 
-      addProviderTiles("Esri.WorldImagery", options = providerTileOptions(noWrap = TRUE)) %>%
+      
+        #Good base maps
+          #OpenStreetMap.Mapnik
+          #Esri.WorldImagery
+          #
+      
+      #addProviderTiles("OpenStreetMap.Mapnik", options = providerTileOptions(noWrap = TRUE)) %>%
+    addProviderTiles(
+      "OpenStreetMap",
+      # give the layer a name
+      group = "OpenStreetMap"
+    ) %>%
+      addProviderTiles(
+        "Stamen.Toner",
+        group = "Stamen.Toner"
+      ) %>%
+      addProviderTiles(
+        "Stamen.Terrain",
+        group = "Stamen.Terrain"
+      ) %>%
+      addProviderTiles(
+        "Esri.WorldStreetMap",
+        group = "Esri.WorldStreetMap"
+      ) %>%
+      addProviderTiles(
+        "Wikimedia",
+        group = "Wikimedia"
+      ) %>%
+      addProviderTiles(
+        "CartoDB.Positron",
+        group = "CartoDB.Positron"
+      ) %>%
+      addProviderTiles(
+        "Esri.WorldImagery",
+        group = "Esri.WorldImagery"
+      ) %>%
+      # add a layers control
+      addLayersControl(
+        baseGroups = c(
+          "OpenStreetMap", "Stamen.Toner",
+          "Stamen.Terrain", "Esri.WorldStreetMap",
+          "Wikimedia", "CartoDB.Positron", "Esri.WorldImagery"
+        ),
+        # position it on the topleft
+        position = "topleft"
+      ) %>%
+    
       setView(lng = -116.75, lat = 43.16, zoom = 11)
   })
 
@@ -103,8 +168,7 @@ function(input, output, session) {
 
     leafletProxy("map", data = RC_data) %>%
       clearShapes() %>%
-      addCircles(~long, ~lat, radius=1, layerId=~uniqueID,
-        stroke=FALSE, fillOpacity=0.4, fillColor=pal(colorData)) %>%
+      addMarkers(~long, ~lat, layerId=~uniqueID) %>%
       addLegend("bottomleft", pal=pal, values=colorData, title=colorBy,
         layerId="colorLegend") %>%
       addPolygons(data=rc_watersheds,
