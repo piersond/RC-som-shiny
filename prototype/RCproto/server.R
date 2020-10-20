@@ -18,24 +18,6 @@ drop_cols <- c('google_id', 'addit_contact_email', 'addit_contact_person', 'auth
                'experiments', 'gradient', 'header_row', 'key_version', 'location_name', 'merge_align', 'modification_date',
                'NA_1', 'NA_2', 'network', 'site_code', 'time_series', 'sample_collector') 
 
-avg.formula = 
-  "function (cluster) {
-var markers = cluster.getAllChildMarkers();
-var sum = 0;
-var count = 0;
-var avg = 0;
-var mFormat = ' marker-cluster-';
-for (var i = 0; i < markers.length; i++) {
-if(markers[i].options.weight != undefined){
-sum += markers[i].options.weight;
-count += 1;
-}
-}
-avg = Math.round(sum/count);
-if(avg<333) {mFormat+='small'} else if (avg>667){mFormat+='large'}else{mFormat+='medium'};
-return L.divIcon({ html: '<div><span>' + avg + '</span></div>', className: 'marker-cluster'+mFormat, iconSize: L.point(40, 40) });
-}"
-
 
 function(input, output, session) {
 
@@ -168,7 +150,8 @@ function(input, output, session) {
 
     leafletProxy("map", data = RC_data) %>%
       clearShapes() %>%
-      addMarkers(~long, ~lat, layerId=~uniqueID) %>%
+      addCircles(~long, ~lat, radius=5, layerId=~uniqueID, 
+                 stroke=FALSE, fillOpacity=0.4, fillColor=pal(colorData)) %>%
       addLegend("bottomleft", pal=pal, values=colorData, title=colorBy,
         layerId="colorLegend") %>%
       addPolygons(data=rc_watersheds,

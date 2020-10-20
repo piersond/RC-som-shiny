@@ -24,15 +24,24 @@ navbarPage("Reynolds Creek Experimental Watershed", id="nav",
       # If not using custom CSS, set height of leafletOutput to a number instead of percent
       leafletOutput("map", width="100%", height="100%"),
 
-      # Shiny versions prior to 0.11 should use class = "modal" instead.
       absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
         draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
         width = 330, height = "auto",
 
         h2("Data explorer"),
 
-        selectInput("color", "Color", vars),
-        selectInput("size", "Size", vars, selected = "adultpop"),
+        selectInput("color", "Map Analyte", vars),
+        selectInput("size", "Classify By", vars, selected = "adultpop"),
+        column(width=12, fixedRow(
+          column(6,
+               numericInput("lyr_top_min", "Layer Top Min", value=0)),
+          column(6,
+                 numericInput("lyr_top_max", "Layer Top Max", value=0)))),
+        column(width=12, fixedRow(
+          column(6,
+                 numericInput("lyr_bot_min", "Layer Bottom Min", value=10)),
+          column(6,
+                 numericInput("lyr_bot_max", "Layer Bottom Max", value=10)))),
         conditionalPanel("input.color == 'superzip' || input.size == 'superzip'",
           # Only prompt for threshold when coloring or sizing by superzip
           numericInput("threshold", "SuperZIP threshold (top n percentile)", 5)
@@ -43,7 +52,7 @@ navbarPage("Reynolds Creek Experimental Watershed", id="nav",
       ),
 
       tags$div(id="cite",
-        'Data compiled for ', tags$em('Coming Apart: The State of White America, 1960–2010'), ' by Charles Murray (Crown Forum, 2012).'
+        'Data compiled for ', tags$em('Reynolds Creek CZO'), ' by Derek Pierson.'
       )
     )
   ),
