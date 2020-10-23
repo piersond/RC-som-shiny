@@ -1,7 +1,7 @@
 library(dplyr)
 library(rgdal)
 
-#setwd("C:/GitHub/RC-som-shiny/prototype/superzip-base")
+#setwd("C:/GitHub/RC-som-shiny/prototype/RCproto")
 
 # allzips <- readRDS("data/superzip.rds")
 # allzips$latitude <- jitter(allzips$latitude)

@@ -4,15 +4,7 @@ library(scales)
 library(lattice)
 library(dplyr)
 
-# # Leaflet bindings are a bit slow; for now we'll just sample to compensate
-# set.seed(100)
-# RC_data <- allzips[sample.int(nrow(allzips), 10000),]
-# # By ordering by centile, we ensure that the (comparatively rare) SuperZIPs
-# # will be drawn last and thus be easier to see
-# RC_data <- RC_data[order(RC_data$centile),]
-
 RC_data <- RC_database
-colnames(RC_data)
 drop_cols <- c('google_id', 'addit_contact_email', 'addit_contact_person', 'author_email', 'author_orcid_id',
                'author_PersonName', 'coarse_tot', 'curator_email', 'curator_organization', 'curator_PersonName', 'data_file',
                'experiments', 'gradient', 'header_row', 'key_version', 'location_name', 'merge_align', 'modification_date',
@@ -22,65 +14,52 @@ drop_cols <- c('google_id', 'addit_contact_email', 'addit_contact_person', 'auth
 function(input, output, session) {
 
   ## Interactive Map ###########################################
-
+  
   # Create the map
   output$map <- renderLeaflet({
     leaflet() %>%
-      # addTiles(
-      #   urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-      #   attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      # ) 
-      
-        #Good base maps
-          #OpenStreetMap.Mapnik
-          #Esri.WorldImagery
-          #
-      
-      #addProviderTiles("OpenStreetMap.Mapnik", options = providerTileOptions(noWrap = TRUE)) %>%
-    addProviderTiles(
-      "OpenStreetMap",
-      # give the layer a name
-      group = "OpenStreetMap"
-    ) %>%
       addProviderTiles(
-        "Stamen.Toner",
-        group = "Stamen.Toner"
+        "OpenStreetMap",
+        # give the layer a name
+        group = "OpenStreetMap"
       ) %>%
-      addProviderTiles(
-        "Stamen.Terrain",
-        group = "Stamen.Terrain"
-      ) %>%
-      addProviderTiles(
-        "Esri.WorldStreetMap",
-        group = "Esri.WorldStreetMap"
-      ) %>%
-      addProviderTiles(
-        "Wikimedia",
-        group = "Wikimedia"
-      ) %>%
-      addProviderTiles(
-        "CartoDB.Positron",
-        group = "CartoDB.Positron"
-      ) %>%
-      addProviderTiles(
-        "Esri.WorldImagery",
-        group = "Esri.WorldImagery"
-      ) %>%
+        addProviderTiles(
+          "Stamen.Toner",
+          group = "Stamen.Toner"
+        ) %>%
+        addProviderTiles(
+          "Stamen.Terrain",
+          group = "Stamen.Terrain"
+        ) %>%
+        addProviderTiles(
+          "Esri.WorldStreetMap",
+          group = "Esri.WorldStreetMap"
+        ) %>%
+        addProviderTiles(
+          "Wikimedia",
+          group = "Wikimedia"
+        ) %>%
+        addProviderTiles(
+          "CartoDB.Positron",
+          group = "CartoDB.Positron"
+        ) %>%
+        addProviderTiles(
+          "Esri.WorldImagery",
+          group = "Esri.WorldImagery"
+        ) %>%
       # add a layers control
       addLayersControl(
         baseGroups = c(
-          "OpenStreetMap", "Stamen.Toner",
-          "Stamen.Terrain", "Esri.WorldStreetMap",
+          "OpenStreetMap", "Stamen.Toner","Stamen.Terrain", "Esri.WorldStreetMap",
           "Wikimedia", "CartoDB.Positron", "Esri.WorldImagery"
         ),
         # position it on the topleft
         position = "topleft"
       ) %>%
-    
       setView(lng = -116.75, lat = 43.16, zoom = 11)
   })
 
-  # A reactive expression that returns the set of zips that are
+  # A reactive expression that returns the set of data points that are
   # in bounds right now
   ptsInBounds <- reactive({
     if (is.null(input$map_bounds))
@@ -94,64 +73,33 @@ function(input, output, session) {
         long >= lngRng[1] & long <= lngRng[2])
   })
 
-  # Precalculate the breaks we'll need for the two histograms
-  #centileBreaks <- hist(plot = FALSE, allzips$centile, breaks = 20)$breaks
-
-  output$histCentile <- renderPlot({
-    #DP SKIP FEATURE
-    return(NULL)
-    
-    # # If no zipcodes are in view, don't plot
-    # if (nrow(ptsInBounds()) == 0)
-    #   
-    # 
-    # hist(ptsInBounds()$centile,
-    #   breaks = centileBreaks,
-    #   main = "SuperZIP score (visible zips)",
-    #   xlab = "Percentile",
-    #   xlim = range(allzips$centile),
-    #   col = '#00DD00',
-    #   border = 'white')
-  })
-
-  output$scatterCollegeIncome <- renderPlot({
-    #DP SKIP FEATURE
-    return(NULL)
-    
-    # # If no zipcodes are in view, don't plot
-    # if (nrow(ptsInBounds()) == 0)
-    #   return(NULL)
-    # 
-    # print(xyplot(income ~ college, data = ptsInBounds(), xlim = range(allzips$college), ylim = range(allzips$income)))
-  })
-
-  # This observer is responsible for maintaining the circles and legend,
-  # according to the variables the user has chosen to map to color and size.
+  # Observe user inputs and update map points
   observe({
     colorBy <- input$color
-    sizeBy <- input$size
+    
+    colorData <- RC_data[[colorBy]]
+    print(sort(colorData))
+    pal <- colorBin("viridis", colorData, 7, pretty = TRUE)
 
-    if (colorBy == "superzip") {
-      # Color and palette are treated specially in the "superzip" case, because
-      # the values are categorical instead of continuous.
-      colorData <- ifelse(RC_data$centile >= (100 - input$threshold), "yes", "no")
-      pal <- colorFactor("viridis", colorData)
-    } else {
-      colorData <- RC_data[[colorBy]]
-      pal <- colorBin("viridis", colorData, 7, pretty = FALSE)
-    }
-
-    if (sizeBy == "superzip") {
-      # Radius is treated specially in the "superzip" case.
-      radius <- ifelse(RC_data$centile >= (100 - input$threshold), 30000, 3000)
-    } else {
-      radius <- RC_data[[sizeBy]] / max(RC_data[[sizeBy]], na.rm = T) * 30000
-    }
-
-    leafletProxy("map", data = RC_data) %>%
+    map_data <- RC_data %>% filter(!!as.symbol(input$color) > -1000)
+    #print(sort(map_data[[colorBy]]))
+    
+    leafletProxy("map", data = map_data %>% filter(!is.na(lat)) %>%
+                                            filter(!is.na(long)) %>%
+                                            filter(!is.na(uniqueID)) %>%
+                                            filter(!is.na(!!as.symbol(colorBy))) %>%
+                                            arrange(!!as.symbol(colorBy))) %>%
       clearShapes() %>%
-      addCircles(~long, ~lat, radius=5, layerId=~uniqueID, 
-                 stroke=FALSE, fillOpacity=0.4, fillColor=pal(colorData)) %>%
+      addCircles(~long, ~lat, layerId=~uniqueID, 
+                 stroke=FALSE, fillOpacity=0.2, fillColor=pal(colorData),
+                 radius = case_when(input$map_zoom >=17 ~1,
+                                    input$map_zoom ==16 ~2,
+                                    input$map_zoom ==15 ~5, 
+                                    input$map_zoom ==14 ~20, 
+                                    input$map_zoom ==13 ~50, 
+                                    input$map_zoom ==12 ~100, 
+                                    input$map_zoom ==11 ~150, 
+                                    input$map_zoom <10 ~200)) %>%
       addLegend("bottomleft", pal=pal, values=colorData, title=colorBy,
         layerId="colorLegend") %>%
       addPolygons(data=rc_watersheds,
@@ -166,9 +114,12 @@ function(input, output, session) {
 
   # Show a popup at the given location
   showZipcodePopup <- function(uniqueID, lat, lng) {
+    # print(uniqueID)
+    # print(lat)
+    # print(lng)
     selectedZip <- RC_data[RC_data$uniqueID == uniqueID,]
     content <- as.character(tagList(
-      tags$h4("ID:", as.character(selectedZip$uniqueID)),
+      tags$h4("IDT:", as.character(selectedZip$uniqueID)),
       tags$strong(HTML(sprintf("%s, %s",
         selectedZip$lat, selectedZip$long
       ))), tags$br(),

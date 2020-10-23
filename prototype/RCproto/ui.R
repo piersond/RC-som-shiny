@@ -1,12 +1,25 @@
 library(leaflet)
 
+#colnames(RC_database)
+
 # Choices for drop-downs
-vars <- c(
+num_vars <- c(
   "SOC %" = "lyr_soc",
-  "Centile score" = "centile",
-  "College education" = "college",
-  "Median income" = "income",
-  "Population" = "adultpop"
+  "SOC Stock" = "lyr_soc_stock",
+  "SIC %" = "lyr_sic",
+  "SIC Stock" = "lyr_sic_stock"
+  # "Centile score" = "centile",
+  # "College education" = "college",
+  # "Median income" = "income",
+  # "Population" = "adultpop"
+)
+
+char_vars <- c(
+  "Watershed" = "L1"
+  # "Centile score" = "centile",
+  # "College education" = "college",
+  # "Median income" = "income",
+  # "Population" = "adultpop"
 )
 
 
@@ -30,8 +43,8 @@ navbarPage("Reynolds Creek Experimental Watershed", id="nav",
 
         h2("Data explorer"),
 
-        selectInput("color", "Map Analyte", vars),
-        selectInput("size", "Classify By", vars, selected = "adultpop"),
+        selectInput("color", "Map Analyte", num_vars),
+        #selectInput("size", "Classify By", char_vars, selected = "adultpop"),
         column(width=12, fixedRow(
           column(6,
                numericInput("lyr_top_min", "Layer Top Min", value=0)),
