@@ -92,14 +92,15 @@ function(input, output, session) {
       clearShapes() %>%
       addCircles(~long, ~lat, layerId=~uniqueID, 
                  stroke=FALSE, fillOpacity=0.2, fillColor=pal(colorData),
-                 radius = case_when(input$map_zoom >=17 ~1,
-                                    input$map_zoom ==16 ~2,
-                                    input$map_zoom ==15 ~5, 
+                 radius = case_when(input$map_zoom >=17 ~5,
+                                    input$map_zoom ==16 ~7,
+                                    input$map_zoom ==15 ~10, 
                                     input$map_zoom ==14 ~20, 
                                     input$map_zoom ==13 ~50, 
                                     input$map_zoom ==12 ~100, 
                                     input$map_zoom ==11 ~150, 
                                     input$map_zoom <10 ~200)) %>%
+      addMarkers(data=rc_met, ~long, ~lat, popup = ~as.character(Description), label = ~as.character(Station)) %>%
       addLegend("bottomleft", pal=pal, values=colorData, title=colorBy,
         layerId="colorLegend") %>%
       addPolygons(data=rc_watersheds,

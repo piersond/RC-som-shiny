@@ -37,6 +37,9 @@ RC_database <- RC_database %>% rename(Dataset = google_dir)
 
 
 #Reynolds creek shapefile
-file.exists('./map/watersheds_2014.shp')
+#file.exists('./map/watersheds_2014.shp')
 rc_watersheds <- readOGR("./map/watersheds_2014.shp", layer="watersheds_2014")
 rc_watersheds <- spTransform(rc_watersheds, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+#Reynolds creek met stations
+rc_met <- read.csv("./map/ARS_climate_station_locs.csv", as.is=T)
